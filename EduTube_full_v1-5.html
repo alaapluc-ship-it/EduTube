@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EduTube</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Tahoma,sans-serif;background:#f5f6f8;color:#161616}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}
+.screen{display:none;min-height:100vh}.screen.show{display:flex}.center{align-items:center;justify-content:center;padding:20px}
+.box{width:min(560px,100%);background:#fff;border-radius:22px;padding:28px;box-shadow:0 8px 30px #0001}
+h1,h2,h3{margin-top:0}.muted{color:#707070;line-height:1.6}
+.btn{background:#e11d48;color:#fff;padding:13px 18px;border-radius:12px;width:100%;font-weight:700;margin-top:12px}.gray{background:#eee;color:#222}
+.choice{width:100%;background:#f2f3f5;padding:18px;border-radius:15px;text-align:right;margin:10px 0}.choice b{display:block;font-size:18px}.choice small{color:#777}
+label{display:block;font-weight:700;margin:12px 0 6px}input,select,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:11px;background:#fff}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.note{background:#fff8e5;padding:14px;border-radius:13px;line-height:1.7;margin:12px 0}
+.app{display:none;min-height:100vh;padding-bottom:72px}.app.show{display:block}
+.top{height:62px;background:#fff;border-bottom:1px solid #e7e7e7;display:flex;align-items:center;gap:12px;padding:0 14px;position:sticky;top:0;z-index:4}.logo{font-size:21px;font-weight:900;color:#e11d48}.logo span{color:#111}.search{flex:1;background:#f0f1f3;border:0;border-radius:22px;padding:10px 15px}.avatar{width:37px;height:37px;border-radius:50%;background:#ddd;display:grid;place-items:center;font-weight:bold}
+.content{max-width:1100px;margin:auto;padding:20px}.chips{display:flex;gap:8px;overflow:auto;margin:0 0 18px}.chip{background:#fff;border:1px solid #ddd;border-radius:20px;padding:9px 15px;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}.empty{background:#fff;border-radius:18px;padding:40px;text-align:center;color:#777}.card{background:#fff;border-radius:15px;overflow:hidden;box-shadow:0 2px 9px #0000000a}.thumb{height:150px;display:grid;place-items:center;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:45px}.short .thumb{background:linear-gradient(135deg,#e11d48,#f97316)}.test .thumb{background:linear-gradient(135deg,#059669,#0ea5e9)}.info{padding:13px}.meta{font-size:12px;color:#777;margin-top:7px}.actions{display:flex;gap:7px;margin-top:10px}.actions button{background:#f0f1f3;border-radius:9px;padding:8px 10px}.comments{border-top:1px solid #eee;margin-top:10px;padding-top:10px}.comment{font-size:12px;padding:5px 0}.commentbox{display:flex;gap:5px;margin-top:7px}.commentbox input{padding:8px}.commentbox button{background:#e11d48;color:#fff;border-radius:8px;padding:8px}
+.bottom{height:70px;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;display:flex;z-index:10}.tab{flex:1;background:none;color:#666;font-size:12px}.tab b{display:block;font-size:22px}.tab.active{color:#e11d48}
+.panel{background:#fff;border-radius:17px;padding:18px;margin-bottom:16px}.progress{height:11px;background:#eee;border-radius:8px;overflow:hidden}.progress i{display:block;height:100%;background:#e11d48}.pending{border:1px solid #eee;border-radius:13px;padding:13px;margin:9px 0}.approve{background:#16a34a;color:#fff;padding:8px 12px;border-radius:8px}.reject{background:#dc2626;color:#fff;padding:8px 12px;border-radius:8px}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.content{padding:14px}.row{flex-direction:column}.search{min-width:0}}
+</style>
+</head>
+<body>
+
+<section id="welcome" class="screen show center"><div class="box">
+<h1>EduTube 🎓</h1><p class="muted">منصة تعليمية للأساتذة والتلاميذ.</p>
+<div class="settings"><label>🌐 اللغة / Language / Langue</label><select id="langSelect" onchange="changeLang(this.value)"><option value="ar">العربية</option><option value="en">English</option><option value="fr">Français</option></select></div><label>رمز الدخول (اختياري)</label>
+<input id="accessCode" placeholder="اكتب الرمز إذا كان لديك">
+<button class="btn gray" onclick="checkSpecialCode()">دخول خاص</button>
+<div id="codeMsg" class="muted" style="margin-top:8px"></div>
+<button class="choice" onclick="startTeacher()"><b>👨‍🏫 أنا أستاذ</b><small>أنشر الدروس وأتابع قناتي وتقدمي.</small></button>
+<button class="choice" onclick="show('studentForm')"><b>🎒 أنا تلميذ</b><small>أشاهد الدروس وأتابع الأساتذة.</small></button>
+</div></section>
+
+<section id="specialAdmin" class="screen center"><div class="box">
+<h1>مركز مراجعة المحتوى 🛡️</h1>
+<p class="muted">هذه الواجهة مخصصة لصاحب رمز المراجعة. كل فيديو أو فيديو قصير أو اختبار يرسله الأستاذ يظهر هنا أولًا.</p>
+<div id="specialAdminList"></div>
+<button class="btn gray" onclick="show('welcome')">خروج</button>
+</div></section>
+
+<section id="profit" class="screen center"><div class="box">
+<h1>هل تريد الربح من محتواك؟ 💰</h1><div class="row">
+<button class="choice" onclick="setProfit(false)">❌ لا أريد</button><button class="choice" onclick="setProfit(true)">💰 نعم أريد</button>
+</div><div id="profitRules" class="note" style="display:none"><b>شروط برنامج الربح:</b><br>⭐ 1000 معجب<br>👥 1000 متابع<br>👁️ 1000 مشاهدة<br><small>💡 لن تظهر طريقة الدفع إلا بعد التحقق من تحقيق الشروط الثلاثة.</small></div>
+<button class="btn" onclick="continueTeacher()">متابعة</button>
+<div id="paymentBox" class="panel" style="display:none;margin-top:12px"><h3>💳 طريقة الدفع</h3><p class="muted">ستظهر طريقة الدفع عبر PayPal فقط بعد تحقيق شروط برنامج الربح.</p><label>بريد PayPal</label><input id="paypalEmail" type="email" placeholder="example@email.com"><button class="btn" onclick="savePaypal()">حفظ PayPal</button><div id="paypalMsg" class="muted" style="margin-top:8px"></div></div>
+</div></section>
+
+<section id="teacherForm" class="screen center"><div class="box">
+<h1>ملف الأستاذ 👨‍🏫</h1>
+<label>الاسم</label><input id="tf">
+<label>اللقب</label><input id="tl">
+<label>السنة الدراسية</label><select id="level"><option>جميع المستويات</option><option>الأولى متوسط</option><option>الثانية متوسط</option><option>الثالثة متوسط</option><option>الرابعة متوسط</option><option>الثانوي</option></select>
+<label>المادة</label><select id="subject"><option>جميع المواد</option><option>الرياضيات</option><option>الفيزياء</option><option>العلوم</option><option>اللغة العربية</option><option>اللغة الإنجليزية</option></select>
+<button class="btn" onclick="enterTeacher()">دخول</button>
+</div></section>
+
+<section id="studentForm" class="screen center"><div class="box">
+<h1>ملف التلميذ 🎒</h1><label>الاسم</label><input id="sf"><label>اللقب</label><input id="sl">
+<button class="btn" onclick="enterStudent()">دخول</button>
+</div></section>
+
+<div id="studentApp" class="app">
+<header class="top"><div class="logo">Edu<span>Tube</span> 🎓</div><input id="studentSearch" class="search" placeholder="ابحث عن درس أو أستاذ..." oninput="renderHome()"><div class="avatar">ت</div></header>
+<main id="studentContent" class="content"></main>
+<nav class="bottom"><button class="tab active" onclick="studentPage('home',this)"><b>🏠</b>الرئيسية</button><button class="tab" onclick="studentPage('channels',this)"><b>📺</b>القنوات</button><button class="tab" onclick="studentPage('saved',this)"><b>🔖</b>المحفوظات</button></nav>
+</div>
+
+<div id="teacherApp" class="app">
+<header class="top"><div class="logo">Edu<span>Tube</span> 🎓</div><div style="flex:1"></div><div class="avatar">أ</div></header>
+<main id="teacherContent" class="content"></main>
+<nav class="bottom"><button class="tab active" onclick="teacherPage('home',this)"><b>🏠</b>الرئيسية</button><button class="tab" onclick="teacherPage('add',this)"><b>➕</b>إضافة</button><button class="tab" onclick="teacherPage('progress',this)"><b>📊</b>التقدم</button></nav>
+</div>
+
+<section id="admin" class="screen center"><div class="box">
+<h1>لوحة المراجعة 🛡️</h1><p class="muted">المحتوى لا يظهر في التطبيق إلا بعد موافقتك.</p>
+<div id="adminList"></div>
+<button class="btn gray" onclick="show('welcome')">خروج</button>
+</div></section>
+
+<script>
+const ADMIN='aliloplys@gmail.com';
+let role='', wantsProfit=false;
+let published=JSON.parse(localStorage.getItem('edutube_published')||'[]');
+let pending=JSON.parse(localStorage.getItem('edutube_pending')||'[]');
+let follows=JSON.parse(localStorage.getItem('edutube_follows')||'[]');
+let comments=JSON.parse(localStorage.getItem('edutube_comments')||'{}');
+let saved=JSON.parse(localStorage.getItem('edutube_saved')||'[]');
+
+function save(){localStorage.setItem('edutube_published',JSON.stringify(published));localStorage.setItem('edutube_pending',JSON.stringify(pending));localStorage.setItem('edutube_follows',JSON.stringify(follows));localStorage.setItem('edutube_comments',JSON.stringify(comments));localStorage.setItem('edutube_saved',JSON.stringify(saved))}
+function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('show'));document.getElementById(id).classList.add('show')}
+const SPECIAL_CODE='alaa2013nassim';
+function checkSpecialCode(){
+ let code=(document.getElementById('accessCode').value||'').trim();
+ if(code===SPECIAL_CODE){show('specialAdmin');renderSpecialAdmin();}
+ else document.getElementById('codeMsg').textContent='الرمز غير صحيح.';
+}
+function startTeacher(){role='teacher';show('profit')}
+function setProfit(v){wantsProfit=v;document.getElementById('profitRules').style.display=v?'block':'none';document.getElementById('paymentBox').style.display='none'}
+function teacherStats(){
+ let name=(tf.value+' '+tl.value).trim();
+ let mine=published.filter(x=>x.teacher===name);
+ return {likes:mine.reduce((a,x)=>a+x.likes,0),subs:mine.reduce((a,x)=>a+x.subs,0),views:mine.reduce((a,x)=>a+x.views,0)};
+}
+function monetizationEligible(){let s=teacherStats();return s.likes>=1000&&s.subs>=1000&&s.views>=1000}
+function showPaymentIfEligible(){
+ const box=document.getElementById('paymentBox');
+ if(!box)return;
+ box.style.display=(wantsProfit&&monetizationEligible())?'block':'none';
+ if(wantsProfit&&!monetizationEligible()){box.innerHTML='<h3>🔒 طريقة الدفع</h3><p class="muted">طريقة الدفع عبر PayPal مغلقة حاليًا. ستظهر تلقائيًا بعد تحقيق: 1000 معجب + 1000 متابع + 1000 مشاهدة.</p>';}
+}
+function savePaypal(){let e=(document.getElementById('paypalEmail').value||'').trim();if(!monetizationEligible())return alert('يجب تحقيق شروط برنامج الربح أولًا.');if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))return alert('أدخل بريد PayPal صحيحًا');localStorage.setItem('edutube_paypal',e);document.getElementById('paypalMsg').textContent='✅ تم حفظ طريقة الدفع عبر PayPal.'}
+function continueTeacher(){show('teacherForm')}
+function enterTeacher(){if(!tf.value.trim()||!tl.value.trim())return alert('أدخل الاسم واللقب');role='teacher';document.querySelectorAll('.screen').forEach(x=>x.classList.remove('show'));teacherApp.classList.add('show');teacherPage('home',document.querySelector('#teacherApp .tab'))}
+function enterStudent(){if(!sf.value.trim()||!sl.value.trim())return alert('أدخل الاسم واللقب');role='student';document.querySelectorAll('.screen').forEach(x=>x.classList.remove('show'));studentApp.classList.add('show');renderHome()}
+function titleFor(p){return p.title}
+function renderHome(){
+ let q=(document.getElementById('studentSearch')?.value||'').trim();
+ let list=published.filter(x=>(x.title+' '+x.teacher+' '+x.subject).includes(q));
+ document.getElementById('studentContent').innerHTML=`<h2>الرئيسية 🏠</h2><div class="chips"><span class="chip">الكل</span><span class="chip">رياضيات</span><span class="chip">فيزياء</span><span class="chip">علوم</span><span class="chip">لغة عربية</span></div>${list.length?'<div class="grid">'+list.map(card).join('')+'</div>':'<div class="empty">📚<h3>لا توجد دروس منشورة حاليًا</h3><p>ستظهر الدروس هنا بعد أن يرفعها الأستاذ ويتم اعتمادها من الإدارة.</p></div>'}`;
+}
+function card(x){
+ let cs=comments[x.id]||[];
+ let cls=x.type==='short'?'short':x.type==='test'?'test':'';
+ return `<article class="card ${cls}"><div class="thumb">${x.type==='short'?'📱':x.type==='test'?'📝':'▶️'}</div><div class="info"><b>${x.title}</b><div class="meta">👨‍🏫 ${x.teacher} • ${x.subject}</div><div class="meta">👁️ ${x.views} مشاهدة • 👥 ${x.subs} متابع • ❤️ ${x.likes}</div><div class="actions"><button onclick="watch('${x.id}')">▶ مشاهدة</button><button onclick="follow('${x.id}')">👥 متابعة</button><button onclick="like('${x.id}')">❤️</button><button onclick="saveVideo('${x.id}')">🔖</button></div><div class="comments"><b>💬 التعليقات</b>${cs.map(c=>`<div class="comment">💬 ${escapeHtml(c)}</div>`).join('')}<div class="commentbox"><input id="c${x.id}" placeholder="اكتب تعليقًا..."><button onclick="comment('${x.id}')">إرسال</button></div></div></div></article>`
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function find(id){return published.find(x=>x.id===id)}
+function watch(id){let x=find(id);x.views++;save();renderHome()}
+function follow(id){let x=find(id);if(!follows.includes(x.teacher)){follows.push(x.teacher);x.subs++}save();renderHome();alert('تمت متابعة القناة 👥')}
+function like(id){let x=find(id);x.likes++;save();renderHome()}
+function saveVideo(id){if(!saved.includes(id))saved.push(id);save();alert('تم الحفظ 🔖')}
+function comment(id){let el=document.getElementById('c'+id);if(!el.value.trim())return;(comments[id]??=[]).push(el.value.trim());el.value='';save();renderHome()}
+function studentPage(page,el){document.querySelectorAll('#studentApp .tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');if(page==='home')return renderHome();if(page==='channels'){document.getElementById('studentContent').innerHTML='<h2>القنوات التي تتابعها 📺</h2>'+(follows.length?follows.map(x=>`<div class="panel">👨‍🏫 <b>${escapeHtml(x)}</b><p>القناة التي تتابعها.</p></div>`).join(''):'<div class="empty">لم تتابع أي قناة بعد.</div>')}else{let l=published.filter(x=>saved.includes(x.id));document.getElementById('studentContent').innerHTML='<h2>المحفوظات 🔖</h2>'+(l.length?'<div class="grid">'+l.map(card).join('')+'</div>':'<div class="empty">لا توجد دروس محفوظة.</div>')}}
+function teacherPage(page,el){document.querySelectorAll('#teacherApp .tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');let c=document.getElementById('teacherContent');if(page==='add'){c.innerHTML=`<h2>إضافة محتوى ➕</h2><div class="panel"><p class="muted">كل ما ترفعه سيبقى قيد المراجعة ولن يظهر للتلاميذ حتى الموافقة.</p><label>عنوان المحتوى</label><input id="uploadTitle" placeholder="مثال: المكتسبات القبلية في الفيزياء"><label>نوع المحتوى</label><select id="uploadType"><option value="long">فيديو طويل</option><option value="short">فيديو قصير</option><option value="test">ملف اختبار</option></select><button class="btn" onclick="submitUpload()">إرسال للمراجعة</button></div>`}else{c.innerHTML=`<h2>الرئيسية 🏠</h2><div class="panel"><h3>أهلاً بالأستاذ ${escapeHtml(tf.value+' '+tl.value)}</h3><p class="muted">هذه هي الصفحة الرئيسية المشتركة. لا توجد فيديوهات عشوائية.</p>${published.length?'<div class="grid">'+published.map(card).join('')+'</div>':'<div class="empty">📚 لا توجد دروس منشورة حاليًا.</div>'}</div>`}if(page==='progress'){let s=teacherStats();let eligible=s.likes>=1000&&s.subs>=1000&&s.views>=1000;c.innerHTML=`<h2>تقدمك 📊</h2><div class="panel"><p>👥 المتابعون: <b>${s.subs} / 1000</b></p><div class="progress"><i style="width:${Math.min(100,s.subs/10)}%"></i></div><p>👁️ المشاهدات: <b>${s.views} / 1000</b></p><div class="progress"><i style="width:${Math.min(100,s.views/10)}%"></i></div><p>⭐ المعجبون: <b>${s.likes} / 1000</b></p><div class="progress"><i style="width:${Math.min(100,s.likes/10)}%"></i></div>${eligible&&wantsProfit?`<div id="paymentBox" class="panel" style="margin-top:12px"><h3>💳 طريقة الدفع: PayPal</h3><p class="muted">🎉 مبروك! لقد حققت جميع شروط الربح. أدخل بريد PayPal لاستلام الأرباح.</p><label>بريد PayPal</label><input id="paypalEmail" type="email" placeholder="example@email.com"><button class="btn" onclick="savePaypal()">حفظ PayPal</button><div id="paypalMsg" class="muted" style="margin-top:8px"></div></div>`:`<div class="note" style="margin-top:12px">🔒 PayPal لا يظهر إلا بعد تحقيق 1000 معجب + 1000 متابع + 1000 مشاهدة.</div>`}</div>`;showPaymentIfEligible()}}
+function submitUpload(){let title=document.getElementById('uploadTitle').value.trim();if(!title)return alert('اكتب عنوان المحتوى');let type=document.getElementById('uploadType').value;let item={id:Date.now().toString(),title,type,teacher:tf.value+' '+tl.value,subject:subject.value,views:0,subs:0,likes:0};pending.push(item);save();alert('تم إرسال المحتوى للمراجعة. لن يظهر للتلاميذ حتى تتم الموافقة.');teacherPage('home',document.querySelector('#teacherApp .tab'))}
+function openAdmin(){show('specialAdmin');renderSpecialAdmin()}
+function renderAdmin(){let box=document.getElementById('adminList');box.innerHTML=pending.length?pending.map((x,i)=>`<div class="pending"><b>${escapeHtml(x.title)}</b><br>👨‍🏫 ${escapeHtml(x.teacher)}<br>📚 ${escapeHtml(x.subject)}<br><button class="approve" onclick="approve(${i})">✅ قبول ونشر</button> <button class="reject" onclick="reject(${i})">❌ رفض</button></div>`).join(''):'<div class="empty">لا توجد طلبات جديدة.</div>'}
+function approve(i){published.push(pending[i]);pending.splice(i,1);save();renderAdmin()}
+function reject(i){pending.splice(i,1);save();renderAdmin()}
+function renderSpecialAdmin(){
+ const box=document.getElementById('specialAdminList');
+ box.innerHTML=pending.length ? pending.map((x,i)=>`<div class="pending">
+ <b>${escapeHtml(x.title)}</b><br>👨‍🏫 ${escapeHtml(x.teacher)}<br>📚 ${escapeHtml(x.subject)}
+ <br><small>الحالة: قيد المراجعة</small><br>
+ <button class="approve" onclick="specialApprove(${i})">✅ قبول ونشر</button>
+ <button class="reject" onclick="specialReject(${i})">❌ رفض</button>
+ </div>`).join('') : '<div class="empty">لا توجد فيديوهات أو ملفات تنتظر المراجعة.</div>';
+}
+function specialApprove(i){
+ published.push(pending[i]); pending.splice(i,1); save(); renderSpecialAdmin();
+}
+function specialReject(i){
+ pending.splice(i,1); save(); renderSpecialAdmin();
+}
+const translations={ar:{dir:'rtl',title:'EduTube 🎓',desc:'منصة تعليمية للأساتذة والتلاميذ.',teacher:'أنا أستاذ',student:'أنا تلميذ',special:'دخول خاص',code:'رمز الدخول (اختياري)',search:'ابحث عن درس أو أستاذ...',home:'الرئيسية',channels:'القنوات',saved:'المحفوظات',add:'إضافة',progress:'التقدم'},en:{dir:'ltr',title:'EduTube 🎓',desc:'An educational platform for teachers and students.',teacher:'I am a Teacher',student:'I am a Student',special:'Special Login',code:'Access code (optional)',search:'Search for a lesson or teacher...',home:'Home',channels:'Channels',saved:'Saved',add:'Add',progress:'Progress'},fr:{dir:'ltr',title:'EduTube 🎓',desc:'Une plateforme éducative pour enseignants et élèves.',teacher:'Je suis enseignant',student:'Je suis élève',special:'Accès spécial',code:'Code d’accès (facultatif)',search:'Rechercher un cours ou un enseignant...',home:'Accueil',channels:'Chaînes',saved:'Enregistrés',add:'Ajouter',progress:'Progression'}};
+function changeLang(lang){localStorage.setItem('edutube_lang',lang);applyLang(lang)}
+function applyLang(lang){let t=translations[lang]||translations.ar;document.documentElement.lang=lang;document.documentElement.dir=t.dir;document.querySelector('#welcome h1').textContent=t.title;document.querySelector('#welcome .muted').textContent=t.desc;document.querySelector('#welcome label[for]')?.setAttribute('');let labels=document.querySelectorAll('#welcome label');if(labels.length>1)labels[1].textContent=t.code;document.querySelector('#accessCode').placeholder=lang==='ar'?'اكتب الرمز إذا كان لديك':lang==='en'?'Enter the code if you have one':'Entrez le code si vous en avez un';document.querySelector('#welcome .btn.gray').textContent=t.special;let ch=document.querySelectorAll('#welcome .choice');if(ch.length>=2){ch[0].querySelector('b').textContent='👨‍🏫 '+t.teacher;ch[1].querySelector('b').textContent='🎒 '+t.student}document.querySelectorAll('.search').forEach(x=>x.placeholder=t.search);document.querySelectorAll('.logo').forEach(x=>x.innerHTML='Edu<span>Tube</span> 🎓');}
+applyLang(localStorage.getItem('edutube_lang')||'ar');
+document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==='a')openAdmin()})
+</script>
+</body>
+</html>
